@@ -6,14 +6,23 @@ const communication = require('./modules/communication')
 const imageprocessing = require('./modules/imageprocessing')
 const modules = ['navigation', 'communications', 'imageprocessing']
 
-var lastUpdatedTime;
-const expirationTime = 6;
+var lastUpdatedTime
+const expirationTime = 6
 
-function updateTime(){
-  var currentTime = new Date();
-  lastUpdatedTime = navigation.navObj.time;
-  console.log(currentTime.getSeconds() - lastUpdatedTime.getSeconds()) 
-  setTimeout(updateTime, 4000);
+function updateTime() {
+  var currentTime = new Date()
+  lastUpdatedTime = navigation.navObj.time
+  console.log('lastupdatedTime', lastUpdatedTime)
+  console.log(currentTime.getSeconds() - lastUpdatedTime.getSeconds())
+  if (
+    currentTime.getSeconds() - lastUpdatedTime.getSeconds() >
+    expirationTime
+  ) {
+    console.log('heart not beating')
+  } else {
+    //Do Nothing
+  }
+  setTimeout(updateTime, 2000)
 }
 
 if (cluster.isMaster) {
@@ -32,10 +41,10 @@ if (cluster.isMaster) {
   switch (process.env.moduleType) {
     case 'navigation':
       navigation.init()
-      updateTime();
+      updateTime()
       break
     case 'communications':
-      communication.init();
+      communication.init()
       break
     case 'imageprocessing':
       imageprocessing.init()

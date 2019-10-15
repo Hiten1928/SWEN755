@@ -3,19 +3,32 @@ var navObj = {
   time: new Date()
 }
 
-function calculateDistance() {
-  let longitude = Math.random()
+function generateCoordinates() {
+  let minLongitude = -90.0
+  let maxLongitude = 90.0
+  let minLatitude = -180.0
+  let maxLatitude = 180.0
+
+  let latitude = minLatitude + Math.random() * (maxLatitude - minLongitude + 1)
+  let longitude =
+    minLongitude + Math.random() * (maxLongitude - minLongitude + 1)
+
+  if (latitude > 89.8 && longitude < 0.2) {
+    console.log('Critical process died')
+    return false
+  } else {
+    return true
+  }
 }
 
 function init() {
-  var count = 0
-  closure: () => {
+  let heartBeatCheck = generateCoordinates()
+  console.log('heartBeatCheck', heartBeatCheck)
+  if (heartBeatCheck) {
     navObj.time = new Date()
-    while (count < 3) {
-      console.log(count)
-      count++
-      setTimeout(closure(), 4000)
-    }
+    setTimeout(init, 2000)
+  } else {
+    console.log('died')
   }
 }
 module.exports = {
