@@ -1,7 +1,7 @@
-var navObj = {
-  msg: "I'm alive",
-  time: new Date()
-}
+// var navObj = {
+//   msg: "I'm alive",
+//   time: new Date()
+// }
 
 function generateCoordinates() {
   let minLongitude = -90.0
@@ -13,29 +13,39 @@ function generateCoordinates() {
   let longitude =
     minLongitude + Math.random() * (maxLongitude - minLongitude + 1)
 
-  console.log('latitude', latitude, 'longitude', longitude)
+  // console.log('latitude', latitude, 'longitude', longitude)
 
   if (latitude > 89.8 && longitude < 0.2) {
     console.log('Critical process died')
-    return false
+    return null
   } else {
-    return true
+    return { latitude, longitude }
   }
 }
 
 function init() {
   let heartBeatCheck = generateCoordinates()
-  console.log('heartBeatCheck', heartBeatCheck)
   if (heartBeatCheck) {
-    navObj.time = new Date()
-    setTimeout(init, 2000)
+    process.send({
+      latitude: heartBeatCheck.latitude,
+      longitude: heartBeatCheck.longitude,
+      msg: 'I am alive'
+    })
+    setTimeout(() => {
+      init()
+    }, 2000)
   } else {
-    console.log('died')
+    // ddd
   }
+  // console.log('heartBeatCheck', heartBeatCheck)
+  // if (heartBeatCheck) {
+  //   navObj.time = new Date()
+  //   setTimeout(init, 2000)
+  // } else {
+  //   console.log('died')
+  // }
 }
 module.exports = {
-  init: () => {
-    init()
-  },
-  navObj
+  init
+  // navObj
 }
