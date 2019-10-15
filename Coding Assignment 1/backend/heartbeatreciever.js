@@ -3,10 +3,21 @@ const http = require('http')
 const numCPUs = require('os').cpus().length
 const navigation = require('./modules/navigation')
 const communication = require('./modules/communication')
+const imageprocessing = require('./modules/imageprocessing')
+const modules = ['navigation', 'communications', 'imageprocessing']
+
+var lastUpdatedTime;
+const expirationTime = 6;
+
+function updateTime(){
+  var currentTime = new Date();
+  lastUpdatedTime = navigation.navObj.time;
+  console.log(currentTime.getSeconds() - lastUpdatedTime.getSeconds()) 
+  setTimeout(updateTime, 4000);
+}
 
 if (cluster.isMaster) {
   console.log(`Master ${process.pid} is running`)
-  const modules = ['navigation', 'communications', 'controls']
   // fork workers
   modules.forEach(mod => {
     cluster.fork({
@@ -21,9 +32,13 @@ if (cluster.isMaster) {
   switch (process.env.moduleType) {
     case 'navigation':
       navigation.init()
+      updateTime();
       break
     case 'communications':
-      communication.init()
+      communication.init();
+      break
+    case 'imageprocessing':
+      imageprocessing.init()
       break
   }
 }
