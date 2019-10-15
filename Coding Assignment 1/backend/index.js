@@ -5,10 +5,9 @@ const port = 3000
 app.set('view-engine','ejs');
 
 app.get('/',(req, res)=>{
-    // res.sendFile("index.html", {
-    //     root: './webFiles/'
-    // })
-    res.render('webFiles/index')
+    res.sendFile("index.html", {
+        root: './webFiles/'
+    })
 });
 
 app.post('/heartbeat', (req,res)=>{
