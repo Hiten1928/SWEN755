@@ -3,22 +3,24 @@ var navObj = {
   time: new Date()
 }
 
-function init(){
-  var count= 0
-  closure: ()=>{
-    navObj.time = new Date();
-    while(count < 3){
-      console.log(count)
-      count++;
-      setTimeout(closure(),4000)
-    }
-
+function calculateDistance() {
+  let longitude = Math.random()
 }
+
+function init() {
+  var count = 0
+  closure: () => {
+    navObj.time = new Date()
+    while (count < 3) {
+      console.log(count)
+      count++
+      setTimeout(closure(), 4000)
+    }
+  }
 }
 module.exports = {
-  init: () => 
-  {
-    init();
+  init: () => {
+    init()
   },
   navObj
 }
