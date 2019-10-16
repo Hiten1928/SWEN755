@@ -13,19 +13,20 @@ let data = {
 
 if (cluster.isMaster) {
   // Creating a child child process
-  cluster.fork()
-  for (let id in cluster.workers) {
-    console.log(id)
-    cluster.workers[id].on('message', msg => {
-      io.emit('msg', {
-        latitude: msg.latitude,
-        longitude: msg.longitude,
-        msg: msg.msg
-      })
-      // console.log(msg.latitude, msg.longitude, msg.msg)
-      data.navigation.last_seen = new Date()
+  const worker = cluster.fork()
+  worker.on('message', msg => {
+    io.emit('msg', {
+      latitude: msg.latitude,
+      longitude: msg.longitude,
+      msg: msg.msg
     })
-  }
+    // console.log(msg.latitude, msg.longitude, msg.msg)
+    data.navigation.last_seen = new Date()
+  })
+
+  worker.on('disconnect', () => {
+    io.emit('msg', 'the process died')
+  })
   // check the status of child process
   const checkInterval = () => {
     var currentTime = new Date()
@@ -41,7 +42,7 @@ if (cluster.isMaster) {
       // console.log('heart not beating')
     } else {
       //Do Nothing
-      console.log('in else')
+      // console.log('in else')
     }
     setTimeout(() => {
       checkInterval()

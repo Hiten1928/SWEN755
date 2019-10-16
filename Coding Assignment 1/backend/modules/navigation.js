@@ -14,7 +14,7 @@ function generateCoordinates() {
     minLongitude + Math.random() * (maxLongitude - minLongitude + 1)
 
   // console.log('latitude', latitude, 'longitude', longitude)
-
+  // return { latitude, longitude }
   if (latitude > 89.8 && longitude < 0.2) {
     console.log('Critical process died')
     return null
