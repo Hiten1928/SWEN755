@@ -1,20 +1,131 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <title>Document</title>
-  </head>
-  <body>
-    <h1>Heartbeat</h1>
-    <script src="/socket.io/socket.io.js"></script>
 
-    <script>
-      let socket = io()
-      socket.on('msg', msg => {
-        console.log('msg', msg)
-      })
-    </script>
-  </body>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+  <title>HeartBeat simulator</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto',
+        'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans',
+        'Helvetica Neue', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    code {
+      font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+        monospace;
+    }
+
+    header {
+      /* width: 100%; */
+      background: black;
+      color: white;
+      padding: 10px 20px;
+    }
+
+    header h2 {
+      margin: 0;
+      padding: 0;
+    }
+
+    .list {
+      max-width: 800px;
+      margin: auto;
+      background: whitesmoke;
+      border-radius: 10px;
+      padding: 10px 20px;
+      margin-top: 10px;
+    }
+
+    .listItem {
+      display: flex;
+      justify-content: space-evenly;
+      margin-top: 10px;
+      border-bottom: 1px solid lightgray;
+    }
+
+    .item {
+      width: 100px;
+      text-align: center;
+    }
+
+    .error {
+      background: rgb(126, 0, 0);
+      max-width: 800px;
+      border-radius: 0px 0px 10px 10px;
+      color: white;
+      display: flex;
+      justify-content: space-evenly;
+      padding: 10px 20px;
+      /* position: absolute; */
+      /* bottom: 0; */
+      margin: auto;
+      align-items: center;
+    }
+
+    .errorCount {
+      background: rgb(190, 29, 29);
+      border-radius: 50%;
+      padding: 10px;
+      width: 20px;
+      height: 20px;
+      text-align: center;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h2>Module: Navigation</h2>
+  </header>
+
+  <div class="list">
+    <div class="listItem">
+      <div class="item">Latitude</div>
+      <div class="item">Longitude</div>
+      <div class="item">Message</div>
+    </div>
+  </div>
+  <div class="error" style="display: none;">
+    <div class="errorText">You have errors</div>
+    <div class="errorCount">23</div>
+  </div>
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    let errors = 0
+    let socket = io()
+    socket.on('msg', msg => {
+      if (msg.latitude) {
+        let listItem = document.createElement('div')
+        listItem.setAttribute('class', 'listItem')
+        for (let key in msg) {
+          let item = document.createElement('div')
+          item.setAttribute('class', 'item')
+          item.appendChild(document.createTextNode(msg[key]))
+          listItem.appendChild(item)
+        }
+        document.querySelector('.list').appendChild(listItem)
+      } else {
+        console.log(msg)
+        if (errors === 0) {
+          document
+            .querySelector('.error')
+            .setAttribute('style', 'display: flex;')
+        }
+        let errorText = document.querySelector('.errorText')
+        errorText.firstChild.remove()
+        errorText.appendChild(document.createTextNode(msg))
+        let errorCount = document.querySelector('.errorCount')
+        errorCount.firstChild.remove()
+        errorCount.appendChild(document.createTextNode(errors++))
+      }
+    })
+  </script>
+</body>
+
 </html>

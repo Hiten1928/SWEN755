@@ -1,9 +1,10 @@
 const cluster = require('cluster')
 const navigation = require('./modules/navigation')
-const expirationTime = 6
+const expirationTime = 4
 const app = require('express')()
 const http = require('http').createServer(app)
 const io = require('socket.io')(http)
+const checkingTime = 2000;
 
 let data = {
   navigation: {
@@ -13,18 +14,20 @@ let data = {
 
 if (cluster.isMaster) {
   // Creating a child child process
-  cluster.fork()
-  for (let id in cluster.workers) {
-    console.log(id)
-    cluster.workers[id].on('message', msg => {
-      io.emit('msg', {
-        latitude: msg.latitude,
-        longitude: msg.longitude,
-        msg: msg.msg
-      })
-      data.navigation.last_seen = new Date()
+  const worker = cluster.fork()
+  worker.on('message', msg => {
+    io.emit('msg', {
+      latitude: msg.latitude,
+      longitude: msg.longitude,
+      msg: msg.msg
     })
-  }
+    // console.log(msg.latitude, msg.longitude, msg.msg)
+    data.navigation.last_seen = new Date()
+  })
+
+  worker.on('disconnect', () => {
+    io.emit('msg', 'the process died')
+  })
   // check the status of child process
   const checkInterval = () => {
     var currentTime = new Date()
@@ -33,14 +36,14 @@ if (cluster.isMaster) {
       (currentTime.getTime() - lastUpdatedTime.getTime()) / 1000
     if (differenceInSeconds > expirationTime) {
       // send not working to frontend
-      io.emit('msg', 'heart not beating')
+      io.emit('msg', 'Failure in Critical Process')
     } else {
       //Do Nothing
-      console.log('in else')
+      // console.log('in else')
     }
     setTimeout(() => {
       checkInterval()
-    }, 2000)
+    }, checkingTime)
   }
   checkInterval()
   // create the app
