@@ -31,15 +31,11 @@ if (cluster.isMaster) {
   const checkInterval = () => {
     var currentTime = new Date()
     lastUpdatedTime = data.navigation.last_seen
-    // console.log('lastupdatedTime', lastUpdatedTime)
-    // console.log(currentTime.getSeconds() - lastUpdatedTime.getSeconds())
     let differenceInSeconds =
       (currentTime.getTime() - lastUpdatedTime.getTime()) / 1000
-    // console.log(differenceInSeconds)
     if (differenceInSeconds > expirationTime) {
       // send not working to frontend
       io.emit('msg', 'heart not beating')
-      // console.log('heart not beating')
     } else {
       //Do Nothing
       // console.log('in else')
