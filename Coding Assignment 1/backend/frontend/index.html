@@ -112,6 +112,10 @@
         document.querySelector('.list').appendChild(listItem)
       } else {
         console.log(msg)
+        if (msg === 'the process died') {
+          alert(msg)
+          return
+        }
         if (errors === 0) {
           document
             .querySelector('.error')
@@ -123,6 +127,7 @@
         let errorCount = document.querySelector('.errorCount')
         errorCount.firstChild.remove()
         errorCount.appendChild(document.createTextNode(errors++))
+
       }
     })
   </script>
