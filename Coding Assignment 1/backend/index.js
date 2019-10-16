@@ -1,6 +1,10 @@
 const cluster = require('cluster')
 const navigation = require('./modules/navigation')
 const expirationTime = 6
+const app = require('express')()
+const http = require('http').createServer(app)
+const io = require('socket.io')(http)
+
 let data = {
   navigation: {
     last_seen: new Date()
@@ -13,7 +17,12 @@ if (cluster.isMaster) {
   for (let id in cluster.workers) {
     console.log(id)
     cluster.workers[id].on('message', msg => {
-      console.log(msg.latitude, msg.longitude, msg.msg)
+      io.emit('msg', {
+        latitude: msg.latitude,
+        longitude: msg.longitude,
+        msg: msg.msg
+      })
+      // console.log(msg.latitude, msg.longitude, msg.msg)
       data.navigation.last_seen = new Date()
     })
   }
@@ -25,10 +34,11 @@ if (cluster.isMaster) {
     // console.log(currentTime.getSeconds() - lastUpdatedTime.getSeconds())
     let differenceInSeconds =
       (currentTime.getTime() - lastUpdatedTime.getTime()) / 1000
-    console.log(differenceInSeconds)
+    // console.log(differenceInSeconds)
     if (differenceInSeconds > expirationTime) {
       // send not working to frontend
-      console.log('heart not beating')
+      io.emit('msg', 'heart not beating')
+      // console.log('heart not beating')
     } else {
       //Do Nothing
       console.log('in else')
@@ -39,6 +49,21 @@ if (cluster.isMaster) {
   }
   checkInterval()
   // create the app
+  app.get('/', (req, res) => {
+    res.sendFile(__dirname + '/frontend/', '/index.html')
+  })
+
+  app.get('/socket.io/socket.io.js', (req, res) => {
+    res.sendFile(__dirname + '/node_modules/socket.io-client/dist/socket.io.js')
+  })
+
+  io.on('connection', socket => {
+    console.log('a user connected')
+  })
+
+  http.listen(3000, () => {
+    console.log('server started')
+  })
 } else {
   navigation.init()
 }
