@@ -1,6 +1,6 @@
 const cluster = require('cluster')
 const navigation = require('./modules/navigation')
-const expirationTime = 6
+const expirationTime = 4
 const app = require('express')()
 const http = require('http').createServer(app)
 const io = require('socket.io')(http)
@@ -36,7 +36,7 @@ if (cluster.isMaster) {
       (currentTime.getTime() - lastUpdatedTime.getTime()) / 1000
     if (differenceInSeconds > expirationTime) {
       // send not working to frontend
-      io.emit('msg', 'heart not beating')
+      io.emit('msg', 'Failure in Critical Process')
     } else {
       //Do Nothing
       // console.log('in else')
