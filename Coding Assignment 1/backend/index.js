@@ -4,6 +4,7 @@ const expirationTime = 6
 const app = require('express')()
 const http = require('http').createServer(app)
 const io = require('socket.io')(http)
+const checkingTime = 2000;
 
 let data = {
   navigation: {
@@ -42,7 +43,7 @@ if (cluster.isMaster) {
     }
     setTimeout(() => {
       checkInterval()
-    }, 2000)
+    }, checkingTime)
   }
   checkInterval()
   // create the app
