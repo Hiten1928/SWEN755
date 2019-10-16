@@ -22,7 +22,6 @@ if (cluster.isMaster) {
         longitude: msg.longitude,
         msg: msg.msg
       })
-      // console.log(msg.latitude, msg.longitude, msg.msg)
       data.navigation.last_seen = new Date()
     })
   }
