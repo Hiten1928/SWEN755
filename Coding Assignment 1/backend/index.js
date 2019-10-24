@@ -1,5 +1,6 @@
 const cluster = require('cluster')
 const navigation = require('./modules/navigation')
+const backup_navigation = require('./modules/backup_navigation')
 const expirationTime = 4
 const app = require('express')()
 const http = require('http').createServer(app)
@@ -14,7 +15,9 @@ let data = {
 
 if (cluster.isMaster) {
   // Creating a child child process
-  const worker = cluster.fork()
+  const worker = cluster.fork({
+    moduleType: 'navigation'
+  })
   worker.on('message', msg => {
     io.emit('msg', {
       latitude: msg.latitude,
@@ -26,7 +29,18 @@ if (cluster.isMaster) {
   })
 
   worker.on('disconnect', () => {
+    const backup = cluster.fork({
+      moduleType: 'backup_navigation'
+    })
     io.emit('msg', 'the process died')
+    backup.on('message', msg => {
+      io.emit('msg', {
+        latitude: msg.latitude,
+        longitude: msg.longitude,
+        msg: msg.msg
+      })
+      console.log(msg.latitude, msg.longitude, msg.msg)
+    })
   })
   // check the status of child process
   const checkInterval = () => {
@@ -63,5 +77,13 @@ if (cluster.isMaster) {
     console.log('server started')
   })
 } else {
-  navigation.init()
+  console.log(`Initialized the navigation system: ${process.pid}`)
+  console.log(process.env.moduleType)
+  if (process.env.moduleType == 'navigation') {
+    console.log('in navigation')
+    navigation.init()
+  }
+  if (process.env.moduleType == 'backup_navigation') {
+    backup_navigation.init()
+  }
 }
