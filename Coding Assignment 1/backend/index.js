@@ -6,7 +6,9 @@ const app = require('express')()
 const http = require('http').createServer(app)
 const io = require('socket.io')(http)
 const checkingTime = 2000
-// var lastData = {}
+var lastData = {}
+
+let flag = false
 
 let data = {
   navigation: {
@@ -19,10 +21,26 @@ if (cluster.isMaster) {
   const worker = cluster.fork({
     moduleType: 'navigation'
   })
-  const backup = cluster.fork({
-    moduleType: 'backup_navigation'
-  })
+
+  // const backup = cluster.fork({
+  //   moduleType: 'backup_navigation'
+  // })
+  // backup.on('message', msg => {
+  //   io.emit('msg', {
+  //     latitude: msg.latitude,
+  //     longitude: msg.longitude,
+  //     msg: msg.msg
+  //   })
+  //   console.log(msg.latitude, msg.longitude, msg.msg)
+  data.navigation.last_seen = new Date()
+  //   // lastData = msg
+  // })
+
   worker.on('message', msg => {
+    // const backup = cluster.fork({
+    //   moduleType: 'backup_navigation',
+    //   lastData: lastData
+    // })
     io.emit('msg', {
       latitude: msg.latitude,
       longitude: msg.longitude,
@@ -30,33 +48,26 @@ if (cluster.isMaster) {
     })
     console.log(msg.latitude, msg.longitude, msg.msg)
     data.navigation.last_seen = new Date()
-    // lastData = msg
+    lastData = msg
+    console.log(lastData)
   })
 
-  backup.on('message', msg => {
-    io.emit('msg', {
-      latitude: msg.latitude,
-      longitude: msg.longitude,
-      msg: msg.msg
-    })
-    console.log(msg.latitude, msg.longitude, msg.msg)
-    data.navigation.last_seen = new Date()
-    // lastData = msg
-  })
   worker.on('disconnect', () => {
-    // const backup = cluster.fork({
-    //   moduleType: 'backup_navigation'
-    // })
+    console.log('lastData', lastData)
+    const backup = cluster.fork({
+      moduleType: 'backup_navigation',
+      lastData: lastData
+    })
     io.emit('msg', 'Navigation Process Failed, Switching to backup')
-    // backup.on('message', msg => {
-    //   io.emit('msg', {
-    //     latitude: msg.latitude,
-    //     longitude: msg.longitude,
-    //     msg: msg.msg
-    //   })
-    // console.log(msg.latitude, msg.longitude, msg.msg)
+    backup.on('message', msg => {
+      io.emit('msg', {
+        latitude: msg.latitude,
+        longitude: msg.longitude,
+        msg: msg.msg
+      })
+      console.log(msg.latitude, msg.longitude, msg.msg)
+    })
   })
-  // })
 
   // check the status of child process
   const checkInterval = () => {
@@ -93,18 +104,18 @@ if (cluster.isMaster) {
     console.log('server started')
   })
 } else {
-  console.log(`Initialized the navigation system: ${process.pid}`)
-  console.log(process.env.moduleType)
   if (process.env.moduleType == 'navigation') {
-    console.log('in navigation')
+    console.log(`Initialized the navigation system: ${process.pid}`)
     navigation.init()
   }
   if (process.env.moduleType == 'backup_navigation') {
+    console.log(`Initialized the Back up navigation system: ${process.pid}`)
+    // if (flag) {
+    //   console.log('index flag: ', flag)
     backup_navigation.init()
 
-    // lastData = {}
+    // } else {
+    console.log('continue')
+    //}
   }
-  // if (process.env.moduleType == 'Monitor') {
-  //   backup_navigation.init()
-  // }
 }

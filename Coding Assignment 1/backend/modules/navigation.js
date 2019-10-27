@@ -12,9 +12,9 @@ function generateCoordinates() {
     minLongitude + Math.random() * (maxLongitude - minLongitude + 1)
 
   if (latitude > 89.0 && longitude < 0.2) {
-    backup_navigation.backup_navigation(lastData)
-    backup_navigation.init()
-    return exception
+    // backup_navigation.backup_navigation(lastData)
+    // backup_navigation.init()
+    process.disconnect()
   } else {
     lastData = {
       latitude: latitude,

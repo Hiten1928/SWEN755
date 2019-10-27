@@ -1,12 +1,10 @@
-var syncData = {}
-var flag
+var syncData = process.env.lastData
+
 //Constructor
-function backup_navigation(Data) {
-  let temp = Data
-  syncData = temp
-  flag = true
-  console.log('in if', flag)
-}
+// function backup_navigation(Data) {
+//   let temp = Data
+//   syncData = temp
+// }
 
 function generateCoordinates() {
   let minLongitude = -90.0
@@ -15,10 +13,10 @@ function generateCoordinates() {
   let maxLatitude = 180.0
   let latitude, longitude
 
-  if (flag) {
+  if (syncData) {
     console.log('sync3', syncData)
-    latitude = syncData['latitude']
-    longitude = syncData['longitude']
+    latitude = syncData.latitude
+    longitude = syncData.longitude
     return { latitude, longitude }
   }
 
@@ -30,20 +28,20 @@ function generateCoordinates() {
 function init() {
   let heartBeatCheck = generateCoordinates()
   console.log('heartbeatCheck', heartBeatCheck)
-  if (heartBeatCheck && flag) {
-    console.log('flag', flag)
+  if (heartBeatCheck) {
     process.send({
       latitude: heartBeatCheck.latitude,
       longitude: heartBeatCheck.longitude,
       msg: 'I am alive in backup'
     })
-    setTimeout(() => {
-      init()
-    }, 2000)
   } else {
   }
+  setTimeout(() => {
+    init()
+  }, 2000)
 }
+
 module.exports = {
-  init,
-  backup_navigation
+  init
+  // backup_navigation
 }
