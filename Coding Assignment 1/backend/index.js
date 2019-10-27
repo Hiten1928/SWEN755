@@ -49,14 +49,14 @@ if (cluster.isMaster) {
     console.log(msg.latitude, msg.longitude, msg.msg)
     data.navigation.last_seen = new Date()
     lastData = msg
-    console.log(lastData)
+    console.log('THis is last data', lastData)
   })
 
   worker.on('disconnect', () => {
     console.log('lastData', lastData)
     const backup = cluster.fork({
       moduleType: 'backup_navigation',
-      lastData: lastData
+      lastData: JSON.stringify(lastData)
     })
     io.emit('msg', 'Navigation Process Failed, Switching to backup')
     backup.on('message', msg => {
