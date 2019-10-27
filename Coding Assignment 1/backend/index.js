@@ -6,6 +6,7 @@ const app = require('express')()
 const http = require('http').createServer(app)
 const io = require('socket.io')(http)
 const checkingTime = 2000
+// var lastData = {}
 
 let data = {
   navigation: {
@@ -18,6 +19,9 @@ if (cluster.isMaster) {
   const worker = cluster.fork({
     moduleType: 'navigation'
   })
+  const backup = cluster.fork({
+    moduleType: 'backup_navigation'
+  })
   worker.on('message', msg => {
     io.emit('msg', {
       latitude: msg.latitude,
@@ -26,22 +30,34 @@ if (cluster.isMaster) {
     })
     console.log(msg.latitude, msg.longitude, msg.msg)
     data.navigation.last_seen = new Date()
+    // lastData = msg
   })
 
-  worker.on('disconnect', () => {
-    const backup = cluster.fork({
-      moduleType: 'backup_navigation'
+  backup.on('message', msg => {
+    io.emit('msg', {
+      latitude: msg.latitude,
+      longitude: msg.longitude,
+      msg: msg.msg
     })
-    io.emit('msg', 'the process died')
-    backup.on('message', msg => {
-      io.emit('msg', {
-        latitude: msg.latitude,
-        longitude: msg.longitude,
-        msg: msg.msg
-      })
-      console.log(msg.latitude, msg.longitude, msg.msg)
-    })
+    console.log(msg.latitude, msg.longitude, msg.msg)
+    data.navigation.last_seen = new Date()
+    // lastData = msg
   })
+  worker.on('disconnect', () => {
+    // const backup = cluster.fork({
+    //   moduleType: 'backup_navigation'
+    // })
+    io.emit('msg', 'Navigation Process Failed, Switching to backup')
+    // backup.on('message', msg => {
+    //   io.emit('msg', {
+    //     latitude: msg.latitude,
+    //     longitude: msg.longitude,
+    //     msg: msg.msg
+    //   })
+    // console.log(msg.latitude, msg.longitude, msg.msg)
+  })
+  // })
+
   // check the status of child process
   const checkInterval = () => {
     var currentTime = new Date()
@@ -85,5 +101,10 @@ if (cluster.isMaster) {
   }
   if (process.env.moduleType == 'backup_navigation') {
     backup_navigation.init()
+
+    // lastData = {}
   }
+  // if (process.env.moduleType == 'Monitor') {
+  //   backup_navigation.init()
+  // }
 }

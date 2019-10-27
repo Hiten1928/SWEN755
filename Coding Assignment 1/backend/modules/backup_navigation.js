@@ -1,26 +1,41 @@
+var syncData = {}
+var flag
+//Constructor
+function backup_navigation(Data) {
+  let temp = Data
+  syncData = temp
+  flag = true
+  console.log('in if', flag)
+}
+
 function generateCoordinates() {
   let minLongitude = -90.0
   let maxLongitude = 90.0
   let minLatitude = 0.0
   let maxLatitude = 180.0
+  let latitude, longitude
 
-  let latitude = minLatitude + Math.random() * (maxLatitude - minLongitude + 1)
-  let longitude =
-    minLongitude + Math.random() * (maxLongitude - minLongitude + 1)
-  // if (latitude > 89.0 && longitude < 0.2) {
-  //   console.log('Critical process died')
-  // } else {
+  if (flag) {
+    console.log('sync3', syncData)
+    latitude = syncData['latitude']
+    longitude = syncData['longitude']
+    return { latitude, longitude }
+  }
+
+  latitude = minLatitude + Math.random() * (maxLatitude - minLongitude + 1)
+  longitude = minLongitude + Math.random() * (maxLongitude - minLongitude + 1)
   return { latitude, longitude }
-  //}
 }
 
 function init() {
   let heartBeatCheck = generateCoordinates()
-  if (heartBeatCheck) {
+  console.log('heartbeatCheck', heartBeatCheck)
+  if (heartBeatCheck && flag) {
+    console.log('flag', flag)
     process.send({
       latitude: heartBeatCheck.latitude,
       longitude: heartBeatCheck.longitude,
-      msg: 'I am alive'
+      msg: 'I am alive in backup'
     })
     setTimeout(() => {
       init()
@@ -29,5 +44,6 @@ function init() {
   }
 }
 module.exports = {
-  init
+  init,
+  backup_navigation
 }
