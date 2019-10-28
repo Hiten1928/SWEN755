@@ -1,10 +1,12 @@
 const cluster = require('cluster')
 const navigation = require('./modules/navigation')
+const backup_navigation = require('./modules/backup_navigation')
 const expirationTime = 4
 const app = require('express')()
 const http = require('http').createServer(app)
 const io = require('socket.io')(http)
 const checkingTime = 2000
+var lastData = {}
 
 let data = {
   navigation: {
@@ -14,7 +16,12 @@ let data = {
 
 if (cluster.isMaster) {
   // Creating a child child process
-  const worker = cluster.fork()
+  const worker = cluster.fork({
+    moduleType: 'navigation'
+  })
+
+  data.navigation.last_seen = new Date()
+
   worker.on('message', msg => {
     io.emit('msg', {
       latitude: msg.latitude,
@@ -23,11 +30,25 @@ if (cluster.isMaster) {
     })
     console.log(msg.latitude, msg.longitude, msg.msg)
     data.navigation.last_seen = new Date()
+    lastData = msg
   })
 
   worker.on('disconnect', () => {
-    io.emit('msg', 'the process died')
+    console.log('lastData', lastData)
+    const backup = cluster.fork({
+      moduleType: 'backup_navigation',
+      lastData: JSON.stringify(lastData)
+    })
+    io.emit('msg', 'Navigation Process Failed, Switching to backup')
+    backup.on('message', msg => {
+      io.emit('msg', {
+        latitude: msg.latitude,
+        longitude: msg.longitude,
+        msg: msg.msg
+      })
+    })
   })
+
   // check the status of child process
   const checkInterval = () => {
     var currentTime = new Date()
@@ -39,7 +60,6 @@ if (cluster.isMaster) {
       io.emit('msg', 'Failure in Critical Process')
     } else {
       //Do Nothing
-      // console.log('in else')
     }
     setTimeout(() => {
       checkInterval()
@@ -63,5 +83,12 @@ if (cluster.isMaster) {
     console.log('server started')
   })
 } else {
-  navigation.init()
+  if (process.env.moduleType == 'navigation') {
+    console.log(`Initialized the navigation system: ${process.pid}`)
+    navigation.init()
+  }
+  if (process.env.moduleType == 'backup_navigation') {
+    console.log(`Initialized the Back up navigation system: ${process.pid}`)
+    backup_navigation.init()
+  }
 }
