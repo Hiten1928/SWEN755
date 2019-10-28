@@ -8,8 +8,6 @@ const io = require('socket.io')(http)
 const checkingTime = 2000
 var lastData = {}
 
-let flag = false
-
 let data = {
   navigation: {
     last_seen: new Date()
@@ -22,25 +20,9 @@ if (cluster.isMaster) {
     moduleType: 'navigation'
   })
 
-  // const backup = cluster.fork({
-  //   moduleType: 'backup_navigation'
-  // })
-  // backup.on('message', msg => {
-  //   io.emit('msg', {
-  //     latitude: msg.latitude,
-  //     longitude: msg.longitude,
-  //     msg: msg.msg
-  //   })
-  //   console.log(msg.latitude, msg.longitude, msg.msg)
   data.navigation.last_seen = new Date()
-  //   // lastData = msg
-  // })
 
   worker.on('message', msg => {
-    // const backup = cluster.fork({
-    //   moduleType: 'backup_navigation',
-    //   lastData: lastData
-    // })
     io.emit('msg', {
       latitude: msg.latitude,
       longitude: msg.longitude,
@@ -49,7 +31,6 @@ if (cluster.isMaster) {
     console.log(msg.latitude, msg.longitude, msg.msg)
     data.navigation.last_seen = new Date()
     lastData = msg
-    console.log('THis is last data', lastData)
   })
 
   worker.on('disconnect', () => {
@@ -65,7 +46,6 @@ if (cluster.isMaster) {
         longitude: msg.longitude,
         msg: msg.msg
       })
-      console.log(msg.latitude, msg.longitude, msg.msg)
     })
   })
 
@@ -80,7 +60,6 @@ if (cluster.isMaster) {
       io.emit('msg', 'Failure in Critical Process')
     } else {
       //Do Nothing
-      // console.log('in else')
     }
     setTimeout(() => {
       checkInterval()
@@ -110,12 +89,6 @@ if (cluster.isMaster) {
   }
   if (process.env.moduleType == 'backup_navigation') {
     console.log(`Initialized the Back up navigation system: ${process.pid}`)
-    // if (flag) {
-    //   console.log('index flag: ', flag)
     backup_navigation.init()
-
-    // } else {
-    console.log('continue')
-    //}
   }
 }

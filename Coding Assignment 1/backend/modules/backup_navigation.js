@@ -1,11 +1,5 @@
-// var syncData = JSON.parse(process.env.lastData)
-// console.log('hello')
-//Constructor
-// function backup_navigation(Data) {
-//   let temp = Data
-//   syncData = temp
-// }
 let flag = true
+
 function generateCoordinates() {
   let minLongitude = -90.0
   let maxLongitude = 90.0
@@ -15,7 +9,6 @@ function generateCoordinates() {
   if (process.env.lastData && flag) {
     flag = false
     let syncData = JSON.parse(process.env.lastData)
-    // console.log(syncData)
     latitude = syncData.latitude
     longitude = syncData.longitude
     return { latitude, longitude }
@@ -44,5 +37,4 @@ function init() {
 
 module.exports = {
   init
-  // backup_navigation
 }
