@@ -15,6 +15,7 @@ let data = {
 }
 
 if (cluster.isMaster) {
+  // Creating a child child process
   const worker = cluster.fork({
     moduleType: 'navigation'
   })
