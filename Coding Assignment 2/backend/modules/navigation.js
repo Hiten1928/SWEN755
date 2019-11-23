@@ -12,7 +12,8 @@ function generateCoordinates() {
     minLongitude + Math.random() * (maxLongitude - minLongitude + 1)
 
   if (latitude > 89.0 && longitude < 0.2) {
-    process.disconnect()
+    return exception
+    // process.disconnect()
   } else {
     lastData = {
       latitude: latitude,

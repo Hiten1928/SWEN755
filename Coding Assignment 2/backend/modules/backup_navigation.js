@@ -22,7 +22,7 @@ function generateCoordinates() {
 function init() {
   let heartBeatCheck = generateCoordinates()
   console.log('heartbeatCheck', heartBeatCheck)
-  if (heartBeatCheck && !flag) {
+  if (heartBeatCheck) {
     process.send({
       latitude: heartBeatCheck.latitude,
       longitude: heartBeatCheck.longitude,
